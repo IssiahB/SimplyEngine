@@ -1,4 +1,4 @@
-package org.jarzarr.scenes;
+package org.jarzarr.test;
 
 import java.awt.Color;
 import java.awt.Font;

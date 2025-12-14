@@ -2,6 +2,7 @@ package org.jarzarr;
 
 import java.awt.Graphics2D;
 
+import org.jarzarr.assets.AssetManager;
 import org.jarzarr.core.EngineConfig;
 import org.jarzarr.core.EngineContext;
 import org.jarzarr.core.GameApp;
@@ -21,6 +22,7 @@ public class Engine<A extends Enum<A>> extends Loop {
 	private InputManager input;
 	private ActionMap<A> actions;
 	private SceneManager scenes;
+	private AssetManager assets;
 	private Camera2D camera;
 
 	private EngineContext<A> ctx;
@@ -53,9 +55,10 @@ public class Engine<A extends Enum<A>> extends Loop {
 		input = new InputManager(window.getCanvas());
 		actions = new ActionMap<>(actionEnumClass, input);
 		scenes = new SceneManager();
+		assets = new AssetManager();
 		camera = new Camera2D(window.getWidth(), window.getHeight());
 
-		ctx = new EngineContext<>(window, input, actions, scenes, camera);
+		ctx = new EngineContext<>(window, input, actions, scenes, camera, assets);
 		
 		window.setOnResize((w, h) -> ctx.scenes().onResize(w, h));
 
@@ -90,6 +93,9 @@ public class Engine<A extends Enum<A>> extends Loop {
 	@Override
 	protected void cleanup() {
 		app.onStop(ctx);
+		
+		if (assets != null) assets.dispose();
+		
 		if (config.disposeWindowOnStop && window != null)
 			window.dispose();
 	}

@@ -9,7 +9,6 @@ import org.jarzarr.core.GameApp;
 import org.jarzarr.input.KeyTrigger;
 import org.jarzarr.input.MouseButtonTrigger;
 import org.jarzarr.scene.Scene;
-import org.jarzarr.scenes.GameScene;
 import org.jarzarr.test.Main.Action;
 
 public class Main implements GameApp<Action> {
