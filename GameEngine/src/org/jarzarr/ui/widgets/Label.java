@@ -2,13 +2,32 @@ package org.jarzarr.ui.widgets;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.Rectangle2D;
 
+import org.jarzarr.ui.Insets;
 import org.jarzarr.ui.UIContext;
 import org.jarzarr.ui.UINode;
 
+/**
+ * Non-interactive text label with optional autosizing and alignment.
+ *
+ * <p>
+ * Autosizing:
+ * </p>
+ * <ul>
+ * <li>If {@code autoSize=true}, the label measures text and sets
+ * {@code prefW/prefH} (unless the user explicitly provided width/height/pref
+ * sizes).</li>
+ * </ul>
+ *
+ * <p>
+ * Alignment is applied within the label's inner content rect (after padding).
+ * </p>
+ */
 public final class Label extends UINode {
+
 	public enum AlignH {
 		LEFT, CENTER, RIGHT
 	}
@@ -19,34 +38,83 @@ public final class Label extends UINode {
 
 	private String text;
 	private Font font;
-	private Color color = Color.WHITE;
+	private Color color;
+
 	private AlignH alignH = AlignH.LEFT;
 	private AlignV alignV = AlignV.TOP;
 
+	private boolean autoSize = true;
+
+	// Cached measurements to avoid re-measuring every layout.
+	private String lastText = null;
+	private Font lastFont = null;
+	private float measuredW = 0;
+	private float measuredH = 0;
+
+	// Shared render context for string bounds (no AA, no fractional metrics)
+	private static final FontRenderContext FRC = new FontRenderContext(null, false, false);
+
 	public Label(String text) {
 		this.text = text;
-		this.prefH = 24;
+		this.padding = Insets.ZERO;
 	}
 
 	public Label text(String t) {
-		text = t;
+		this.text = t;
+		markLayoutDirty();
 		return this;
 	}
 
 	public Label font(Font f) {
-		font = f;
+		this.font = f;
+		markLayoutDirty();
 		return this;
 	}
 
 	public Label color(Color c) {
-		color = c;
+		this.color = c;
 		return this;
 	}
 
 	public Label align(AlignH h, AlignV v) {
-		alignH = h;
-		alignV = v;
+		this.alignH = h;
+		this.alignV = v;
 		return this;
+	}
+
+	public Label autoSize(boolean v) {
+		this.autoSize = v;
+		markLayoutDirty();
+		return this;
+	}
+
+	@Override
+	protected void onMeasure(UIContext ctx) {
+		if (!autoSize)
+			return;
+
+		Font f = (font != null) ? font : (ctx.defaultFont != null ? ctx.defaultFont : ctx.theme.font);
+		if (f == null)
+			return;
+
+		String t = (text != null) ? text : "";
+
+		// Cache hit: no need to re-measure.
+		if (t.equals(lastText) && f.equals(lastFont))
+			return;
+
+		Rectangle2D bounds = f.getStringBounds(t, FRC);
+		measuredW = (float) Math.ceil(bounds.getWidth());
+		measuredH = (float) Math.ceil(bounds.getHeight());
+
+		lastText = t;
+		lastFont = f;
+
+		// Only set pref sizes if user hasn't explicitly set width/height/pref.
+		if (this.width <= 0 && this.prefW <= 0)
+			this.prefW = measuredW + padding.horizontal();
+		if (this.height <= 0 && this.prefH <= 0)
+			this.prefH = measuredH + padding.vertical();
 	}
 
 	@Override
@@ -54,13 +122,14 @@ public final class Label extends UINode {
 		if (text == null || text.isEmpty())
 			return;
 
-		Font f = (font != null) ? font : ctx.defaultFont;
+		Font f = (font != null) ? font : (ctx.defaultFont != null ? ctx.defaultFont : ctx.theme.font);
 		if (f != null)
 			g.setFont(f);
 
-		g.setColor(color);
+		Color c = (color != null) ? color : ctx.theme.text;
+		g.setColor(c);
 
-		FontMetrics fm = g.getFontMetrics();
+		var fm = g.getFontMetrics();
 		int tw = fm.stringWidth(text);
 		int th = fm.getHeight();
 
