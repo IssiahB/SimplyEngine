@@ -172,7 +172,7 @@ public class PauseScene extends UIScene<Action> {
 
 		Font btnFont = small;
 
-		Button resume = new Button("Resume").font(btnFont).onClick(() -> ctx.scenes().pop());
+		Button resume = new Button("Resume").font(btnFont).onClick(() -> ctx.scenes().transitionPop(new org.jarzarr.scene.FadeTransition(0.20)));
 		Button print = new Button("Print State").font(btnFont).onClick(() -> {
 			System.out.println("Name: " + (nameField != null ? nameField.getText() : ""));
 			System.out.println("Mute: " + (muteBox != null && muteBox.isChecked()));
@@ -230,7 +230,7 @@ public class PauseScene extends UIScene<Action> {
 	public void update(double dt) {
 		// ESC closes pause menu
 		if (ctx.actions().isPressed(Action.PAUSE)) {
-			ctx.scenes().pop();
+			ctx.scenes().transitionPop(new org.jarzarr.scene.FadeTransition(0.20));
 			ctx.actions().consumePressed(Action.PAUSE);
 			return;
 		}

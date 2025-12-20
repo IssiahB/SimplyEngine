@@ -87,7 +87,7 @@ public class GameScene implements Scene {
 	public void update(double dt) {
 		// Pause overlay
 		if (ctx.actions().isPressed(Action.PAUSE)) {
-			ctx.scenes().transitionTo(new PauseScene(ctx), new org.jarzarr.scene.FadeTransition(0.20));
+			ctx.scenes().transitionPush(new PauseScene(ctx), new org.jarzarr.scene.FadeTransition(0.20));
 			ctx.actions().consumePressed(Action.PAUSE);
 			return;
 		}
