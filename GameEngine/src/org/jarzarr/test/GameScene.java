@@ -33,7 +33,7 @@ public class GameScene implements Scene {
 
 	private Animation walkRight;
 	private Animation walkLeft;
-	
+
 	private boolean musicPlaying = false;
 
 	public GameScene(EngineContext<Action> ctx) {
@@ -45,26 +45,36 @@ public class GameScene implements Scene {
 		BufferedImage sheetImg = ctx.assets().getImage(WALK_PATH);
 		beeSheet = new SpriteSheet(sheetImg, TILE_W, TILE_H);
 
-		int cols = sheetImg.getWidth() / TILE_W; // 4
-		int rows = sheetImg.getHeight() / TILE_H; // 2 (sanity check)
+		// Build animations from your atlas rectangles (x,y,w,h)
+		// Walk Right: y=0, x = 0..140 step 20, 8 frames
+		walkRight = buildAnimFromRects(beeSheet, ANIM_FPS, new int[][] { { 0, 0, 20, 20 }, // walk_r_0
+				{ 20, 0, 20, 20 }, // walk_r_1
+				{ 40, 0, 20, 20 }, // walk_r_2
+				{ 60, 0, 20, 20 }, // walk_r_3
+				{ 80, 0, 20, 20 }, // walk_r_4
+				{ 100, 0, 20, 20 }, // walk_r_5
+				{ 120, 0, 20, 20 }, // walk_r_6
+				{ 140, 0, 20, 20 } // walk_r_7
+		});
 
-		Animation topRowAnim = Animation.buildRowAnim(beeSheet, 0, cols, ANIM_FPS);
+		// Walk Left: y=20, x = 0..140 step 20, 8 frames
+		walkLeft = buildAnimFromRects(beeSheet, ANIM_FPS, new int[][] { { 0, 20, 20, 20 }, // walk_l_0
+				{ 140, 20, 20, 20 }, // walk_l_7
+				{ 120, 20, 20, 20 }, // walk_l_6
+				{ 100, 20, 20, 20 }, // walk_l_5
+				{ 80, 20, 20, 20 }, // walk_l_4
+				{ 60, 20, 20, 20 }, // walk_l_3
+				{ 40, 20, 20, 20 }, // walk_l_2
+				{ 20, 20, 20, 20 }, // walk_l_1
+		});
 
-		// Pick one as default (standing still, etc.)
-		beeAnim = topRowAnim;
-
-		music = ctx.assets().getSound(WAV_PATH);
-		music.setVolumeDb(-8f);
-
-		// Store these if you want to switch at runtime:
-		this.walkRight = topRowAnim;
-		this.walkLeft = topRowAnim;
+		// Default animation
+		beeAnim = walkRight;
 
 		// Load WAV as Sound
 		music = ctx.assets().getSound(WAV_PATH);
-		// optional: reduce volume a bit (0 is default)
 		music.setVolumeDb(-8f);
-		
+
 		// Camera
 		ctx.camera().setZoom(5.0);
 	}
@@ -77,7 +87,7 @@ public class GameScene implements Scene {
 	public void update(double dt) {
 		// Pause overlay
 		if (ctx.actions().isPressed(Action.PAUSE)) {
-			ctx.scenes().push(new PauseScene(ctx));
+			ctx.scenes().transitionTo(new PauseScene(ctx), new org.jarzarr.scene.FadeTransition(0.20));
 			ctx.actions().consumePressed(Action.PAUSE);
 			return;
 		}
@@ -104,14 +114,16 @@ public class GameScene implements Scene {
 			beeAnim.reset();
 		}
 
-		// Only advance frames when actually moving (optional but feels better)
+		// Only advance frames when moving
 		boolean moving = movingLeft || movingRight || ctx.actions().isDown(Action.MOVE_UP)
 				|| ctx.actions().isDown(Action.MOVE_DOWN);
 
-		if (moving)
+		if (moving) {
 			beeAnim.update(dt);
-		else
-			beeAnim.reset(); // or keep last frame if you prefer
+		} else {
+			// If you want a true "idle" later, swap to an idle anim here.
+			beeAnim.reset();
+		}
 
 		// FIRE (left click) -> play sound
 		if (ctx.actions().isPressed(Action.FIRE)) {
@@ -139,7 +151,24 @@ public class GameScene implements Scene {
 
 		g.drawImage(beeAnim.frame(), (int) x, (int) y, null);
 
-		// Restore for UI render later (if you add any)
+		// Restore transform
 		g.setTransform(original);
+	}
+
+	// -------------------------
+	// Helpers
+	// -------------------------
+
+	/**
+	 * Builds an Animation from an array of rectangles [x,y,w,h] on a SpriteSheet.
+	 * This matches your "atlas" text where each named sprite maps to a rectangle.
+	 */
+	private static Animation buildAnimFromRects(SpriteSheet sheet, double fps, int[][] rects) {
+		BufferedImage[] frames = new BufferedImage[rects.length];
+		for (int i = 0; i < rects.length; i++) {
+			int[] r = rects[i];
+			frames[i] = sheet.spritePx(r[0], r[1], r[2], r[3]);
+		}
+		return new Animation(fps, frames);
 	}
 }

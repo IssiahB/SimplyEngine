@@ -3,6 +3,8 @@ package org.jarzarr.core;
 import org.jarzarr.InputManager;
 import org.jarzarr.Window;
 import org.jarzarr.assets.AssetManager;
+import org.jarzarr.core.time.Scheduler;
+import org.jarzarr.core.time.TweenManager;
 import org.jarzarr.input.ActionMap;
 import org.jarzarr.render.Camera2D;
 import org.jarzarr.scene.SceneManager;
@@ -45,6 +47,9 @@ public final class EngineContext<A extends Enum<A>> {
 	/** Asset manager used to load/cache/dispose engine resources. */
 	private final AssetManager assets;
 
+	private final Scheduler timers;
+	private final TweenManager tweens;
+
 	/** Last fixed delta-time used by the engine update tick (seconds). */
 	private double lastDt;
 
@@ -60,13 +65,15 @@ public final class EngineContext<A extends Enum<A>> {
 	 * @param assets  asset manager
 	 */
 	public EngineContext(Window window, InputManager input, ActionMap<A> actions, SceneManager scenes, Camera2D camera,
-			AssetManager assets) {
+			AssetManager assets, Scheduler timers, TweenManager tweens) {
 		this.window = window;
 		this.input = input;
 		this.actions = actions;
 		this.scenes = scenes;
 		this.camera = camera;
 		this.assets = assets;
+		this.timers = timers;
+		this.tweens = tweens;
 	}
 
 	/**
@@ -109,6 +116,14 @@ public final class EngineContext<A extends Enum<A>> {
 	 */
 	public AssetManager assets() {
 		return assets;
+	}
+
+	public Scheduler timers() {
+		return timers;
+	}
+
+	public TweenManager tweens() {
+		return tweens;
 	}
 
 	/**

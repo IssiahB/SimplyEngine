@@ -52,6 +52,9 @@ public class AssetManager {
 	/** Cached Sound wrappers by normalized resource path. */
 	private final Map<String, Sound> sounds = new HashMap<>();
 
+	/** Cached atlases by normalized resource path. */
+	private final Map<String, SpriteAtlas> atlases = new HashMap<>();
+
 	// -------- Images --------
 
 	/**
@@ -76,6 +79,23 @@ public class AssetManager {
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to load image: " + path, e);
 		}
+	}
+
+	// -------- Atlases --------
+
+	public SpriteAtlas getAtlas(String imagePath, String descriptorPath) {
+		String img = Resources.normalize(imagePath);
+		String desc = Resources.normalize(descriptorPath);
+		String key = img + "|" + desc;
+
+		SpriteAtlas a = atlases.get(key);
+		if (a != null)
+			return a;
+
+		BufferedImage atlasImg = getImage(img);
+		a = SpriteAtlas.load(atlasImg, desc);
+		atlases.put(key, a);
+		return a;
 	}
 
 	// -------- Fonts --------
@@ -206,5 +226,6 @@ public class AssetManager {
 		sounds.clear();
 		images.clear();
 		baseFonts.clear();
+		atlases.clear();
 	}
 }

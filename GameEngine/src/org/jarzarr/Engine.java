@@ -6,6 +6,8 @@ import org.jarzarr.assets.AssetManager;
 import org.jarzarr.core.EngineConfig;
 import org.jarzarr.core.EngineContext;
 import org.jarzarr.core.GameApp;
+import org.jarzarr.core.time.Scheduler;
+import org.jarzarr.core.time.TweenManager;
 import org.jarzarr.input.ActionMap;
 import org.jarzarr.render.Camera2D;
 import org.jarzarr.scene.Scene;
@@ -65,6 +67,9 @@ public class Engine<A extends Enum<A>> extends Loop {
 	/** Default 2D camera used by rendering and scene logic. */
 	private Camera2D camera;
 
+	private Scheduler timers;
+	private TweenManager tweens;
+
 	/**
 	 * Shared engine context passed into the app and scenes. This is the "service
 	 * locator" for engine-owned systems.
@@ -115,9 +120,11 @@ public class Engine<A extends Enum<A>> extends Loop {
 		scenes = new SceneManager();
 		assets = new AssetManager();
 		camera = new Camera2D(window.getWidth(), window.getHeight());
+		timers = new Scheduler();
+		tweens = new TweenManager();
 
 		// Shared context exposed to app/scenes.
-		ctx = new EngineContext<>(window, input, actions, scenes, camera, assets);
+		ctx = new EngineContext<>(window, input, actions, scenes, camera, assets, timers, tweens);
 
 		// Forward resize events to the active scene(s).
 		window.setOnResize((w, h) -> ctx.scenes().onResize(w, h));
@@ -143,6 +150,10 @@ public class Engine<A extends Enum<A>> extends Loop {
 	protected void update(double dt) {
 		// Store last dt so other parts of the engine/app can read it if desired.
 		ctx.setLastDt(dt);
+		
+		// Global timing system
+		timers.update(dt);
+		tweens.update(dt);
 
 		// Update game logic.
 		scenes.update(dt);

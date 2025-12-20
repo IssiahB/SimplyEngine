@@ -4,6 +4,8 @@ import java.awt.Graphics2D;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import org.jarzarr.test.TransitionScene;
+
 /**
  * Stack-based scene controller.
  *
@@ -89,6 +91,16 @@ public class SceneManager {
 	 */
 	public boolean isEmpty() {
 		return stack.isEmpty();
+	}
+
+	/**
+	 * Replace the stack with a transition wrapper that fades from the current top
+	 * scene to the next scene, then ends on the next scene.
+	 */
+	public void transitionTo(Scene next, SceneTransition transition) {
+		Scene from = stack.peekLast();
+		Scene wrapper = new TransitionScene(this, from, next, transition);
+		set(wrapper);
 	}
 
 	/**

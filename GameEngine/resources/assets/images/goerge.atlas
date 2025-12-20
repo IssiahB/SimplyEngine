@@ -1,0 +1,19 @@
+# Walk Right
+walk_r_0 0 0 20 20
+walk_r_1 20 0 20 20
+walk_r_2 40 0 20 20
+walk_r_3 60 0 20 20
+walk_r_4 80 0 20 20
+walk_r_5 100 0 20 20
+walk_r_6 120 0 20 20
+walk_r_7 140 0 20 20
+
+# Walk Left
+walk_l_0 0 20 20 20
+walk_l_1 20 20 20 20
+walk_l_2 40 20 20 20
+walk_l_3 60 20 20 20
+walk_l_4 80 20 20 20
+walk_l_5 100 20 20 20
+walk_l_6 120 20 20 20
+walk_l_7 140 20 20 20

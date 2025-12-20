@@ -259,6 +259,15 @@ public abstract class UINode {
 		gw = (width > 0) ? width : ((prefW > 0) ? prefW : parentGW);
 		gh = (height > 0) ? height : ((prefH > 0) ? prefH : parentGH);
 
+		// Pre-measure DIRECT children before the container lays them out.
+		// This ensures Labels/TextFields have prefW/prefH ready when containers
+		// (DockPane/Grid/Wrap/etc) query them in onLayout().
+		for (UINode c : children) {
+			if (c != null && c.visible) {
+				c.onMeasure(ctx);
+			}
+		}
+
 		// Container-specific child sizing/positioning happens here.
 		onLayout(ctx);
 
